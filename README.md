@@ -1,8 +1,8 @@
 # Linux Monitoring Agent
 
-Easily collect and visualize system metrics from your Linux servers and devices in **Grafana** with **Telemetry Harbor**.
+Easily collect and visualize system metrics from your Linux servers and devices in **Grafana** with **Harbor Scale**.
 
-**_Repo Link:_** https://github.com/TelemetryHarbor/harbor-linux-monitor
+**_Repo Link:_** https://github.com/harborscale/harbor-linux-monitor
 
 ## Features
 - Collect over 24 different system metrics including CPU, memory, disk, network, and more
@@ -18,12 +18,12 @@ Easily collect and visualize system metrics from your Linux servers and devices 
 Before starting, ensure you have:
 - A **Linux** system with **root/sudo** access
 - **curl** installed for API communication
-- A working internet connection to send metrics to Telemetry Harbor
+- A working internet connection to send metrics to Harbor Scale
 - Basic knowledge of Linux terminal commands
 
 ## Setup
-### 1. Create a Telemetry Harbor Account
-1. **Sign up** at [Telemetry Harbor](https://telemetryharbor.com/)
+### 1. Create a Harbor Scale Account
+1. **Sign up** at [Harbor Scale](https://harborscale.com/)
 2. **Verify** your email and log in
 3. **Create a Harbor**:
    - Click **Create Harbor** on your dashboard
@@ -43,7 +43,7 @@ Before starting, ensure you have:
 ### 2. Install the Monitoring Agent
 1. Download the installation script:
 ``` bash
-curl -sSL -o install-monitoring.sh https://raw.githubusercontent.com/TelemetryHarbor/harbor-linux-monitor/refs/heads/main/install.sh
+curl -sSL -o install-monitoring.sh https://raw.githubusercontent.com/harborscale/harbor-linux-monitor/refs/heads/main/install.sh
 ```
 2. Make it executable:
 ``` bash
@@ -57,7 +57,7 @@ sudo ./install-monitoring.sh
 
 During installation, you'll be prompted to:
 
-1. **Enter your Telemetry Harbor API details**:
+1. **Enter your Harbor Scale API details**:
    - API Batch Endpoint URL
    - API Key
 
@@ -153,7 +153,7 @@ sudo ./install-monitoring.sh
 **Service starts but no data appears in Grafana**
 - Check the service logs: `journalctl -u harbor-monitor -f`
 - Verify the metrics are being collected correctly
-- Ensure your Telemetry Harbor account is active
+- Ensure your Harbor Scale account is active
 
 **High CPU usage from the monitoring service**
 - Increase the sampling rate to reduce frequency

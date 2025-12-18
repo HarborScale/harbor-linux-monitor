@@ -22,16 +22,16 @@ RESET="\e[0m"
 display_intro() {
   clear
   echo -e "${BLUE}${BOLD}======================================================${RESET}"
-  echo -e "${BLUE}${BOLD}             TELEMETRY HARBOR MONITOR               ${RESET}"
+  echo -e "${BLUE}${BOLD}             Harbor Scale MONITOR               ${RESET}"
   echo -e "${BLUE}${BOLD}======================================================${RESET}"
   echo ""
   echo -e "This script will set up a monitoring service that collects"
-  echo -e "various system metrics and sends them to your Telemetry Harbor endpoint."
+  echo -e "various system metrics and sends them to your Harbor Scale endpoint."
   echo ""
   echo -e "${YELLOW}The Harbor Monitor will:${RESET}"
   echo -e "  • Run as a systemd service that starts automatically on boot"
   echo -e "  • Collect your selected metrics at your chosen interval"
-  echo -e "  • Send data to your Telemetry Harbor endpoint in batch format"
+  echo -e "  • Send data to your Harbor Scale endpoint in batch format"
   echo -e "  • Each metric will be sent as a separate cargo with your hostname as the ship_id"
   echo ""
 }
@@ -137,7 +137,7 @@ select_metrics_with_checkboxes() {
     tput rc
     
     echo -e "${BLUE}${BOLD}Select metrics to monitor:${RESET} (use ${UNDERLINE}UP/DOWN${RESET} to navigate, ${UNDERLINE}SPACE${RESET} to select, ${UNDERLINE}ENTER${RESET} to confirm)"
-    echo -e "${YELLOW}Note:${RESET} The number of metrics should not exceed your telemetry harbor's max batch size."
+    echo -e "${YELLOW}Note:${RESET} The number of metrics should not exceed your Harbor Scale's max batch size."
     echo ""
     
     # Add "Select All" option at the top
@@ -299,7 +299,7 @@ select_metrics_simple() {
   echo -e "  ${BOLD}A.${RESET} ${GREEN}Select ALL metrics${RESET}"
   echo ""
   echo -e "${YELLOW}Enter the numbers of metrics you want to collect, separated by spaces.${RESET}"
-  echo -e "Note: The number of metrics should not exceed your telemetry harbor's max batch size."
+  echo -e "Note: The number of metrics should not exceed your Harbor Scale's max batch size."
   read -p "Metrics to collect (e.g., '1 3 5 7' or 'A' for all): " METRICS_INPUT
   
   # Check if user wants all metrics
@@ -1224,7 +1224,7 @@ chmod +x /usr/local/bin/harbor-monitor.sh
 # Create systemd service file
 cat > /etc/systemd/system/harbor-monitor.service << EOF
 [Unit]
-Description=Telemetry Harbor Monitor
+Description=Harbor Scale Monitor
 After=network.target
 
 [Service]
