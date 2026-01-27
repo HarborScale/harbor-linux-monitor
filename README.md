@@ -1,161 +1,130 @@
-# Linux Monitoring Agent
 
-Easily collect and visualize system metrics from your Linux servers and devices in **Grafana** with **Harbor Scale**.
 
-**_Repo Link:_** https://github.com/harborscale/harbor-linux-monitor
+# Linux System Monitoring
 
-## Features
-- Collect over 24 different system metrics including CPU, memory, disk, network, and more
-- Customizable metric selection to fit your monitoring needs
-- Configurable sampling rates from 1 second to 5 minutes
-- Automatic service installation with systemd integration
-- Interactive installation with color-coded interface
-- Support for multiple Linux distributions
-- Minimal dependencies - works on most Linux systems out of the box
+This guide explains how to set up **Harbor Lighthouse** on your Linux servers. Lighthouse is a tiny, single-binary agent that replaces the legacy bash scripts. It automatically collects system performance metrics, handles network interruptions, and ships data securely to Harbor Scale.
+
+**_Repo Link:_** https://github.com/harborscale/harbor-lighthouse
 
 ## Prerequisites
 
 Before starting, ensure you have:
-- A **Linux** system with **root/sudo** access
-- **curl** installed for API communication
-- A working internet connection to send metrics to Harbor Scale
-- Basic knowledge of Linux terminal commands
 
-## Setup
-### 1. Create a Harbor Scale Account
-1. **Sign up** at [Harbor Scale](https://harborscale.com/)
-2. **Verify** your email and log in
-3. **Create a Harbor**:
-   - Click **Create Harbor** on your dashboard
-   - Choose a **name** and select **General** as the type
-   - Select the **Free** plan (or upgrade for more data capacity)
-   - Click **Create**
+-   A **Linux** system (Ubuntu, Debian, CentOS, Arch, or Raspberry Pi OS).
+-   **Root/Sudo** access to install the system service.
+-   **curl** installed.
+-   A **Harbor Scale account** (Cloud or Self-Hosted).
 
-4. **Retrieve your credentials**:
-   - After creation, go to **View Details**
-   - Note down:
-     - `API Batch Endpoint`
-     - `API Key`
-     - `Grafana Endpoint`
-     - `Grafana Username`
-     - `Grafana Password`
+## How it Works
 
-### 2. Install the Monitoring Agent
-1. Download the installation script:
-``` bash
-curl -sSL -o install-monitoring.sh https://raw.githubusercontent.com/harborscale/harbor-linux-monitor/refs/heads/main/install.sh
+The Lighthouse agent runs as a background system service (`systemd`). It uses the internal `linux` collector driver to read directly from kernel statistics (like `/proc/stat` and `/proc/meminfo`) without spawning external processes. This makes it significantly more efficient than previous script-based solutions.
+
+
+---
+
+## Setup Guide
+
+### 1. Get Your Credentials
+
+If you haven't already, log in to your Harbor Scale dashboard to get your connection details.
+
+1.  **Cloud Users:** You need your **Harbor ID** (e.g., `123`) and **API Key**.
+2.  **Self-Hosted Users:** You need your **Endpoint URL** (e.g., `http://192.168.1.50:8000`) and **API Key**.
+
+### 2. Install the Agent
+
+We provide a universal installer that detects your OS and architecture (AMD64, ARM64/Pi, etc.).
+
+```bash
+curl -sL get.harborscale.com | sudo bash
 ```
-2. Make it executable:
-``` bash
-chmod +x install-monitoring.sh
+
+### 3. Add the System Monitor
+
+Once installed, use the `lighthouse` CLI to configure the monitoring job. This command registers the monitor and starts the collection immediately.
+
+**For Harbor Scale Cloud:**
+
+```bash
+sudo lighthouse --add --name "server-01" --harbor-id "YOUR_HARBOR_ID" --key "YOUR_API_KEY" --source linux
 ```
-3. Run the installation script with root privileges:
-``` bash
-sudo ./install-monitoring.sh
+
+**For Self-Hosted / OSS:**
+
+```bash
+sudo lighthouse --add --name "server-01" --endpoint "http://YOUR_IP:8000" --key "YOUR_API_KEY" --source linux
 ```
-### 3. Configuration During Installation
 
-During installation, you'll be prompted to:
+> **Note:** Replace `server-01` with a unique name for this device.
 
-1. **Enter your Harbor Scale API details**:
-   - API Batch Endpoint URL
-   - API Key
+---
 
-2. **Select a sampling rate** for how often metrics are collected:
-   - Every 1 second
-   - Every 5 seconds
-   - Every 30 seconds
-   - Every 1 minute (default)
-   - Every 5 minutes
+## Configuration & Customization
 
-3. **Choose which metrics to monitor** using either:
-   - Interactive checkbox menu (arrow keys to navigate, space to select)
-   - Simple number entry
+The `linux` collector works out of the box, but you can customize how it runs using flags during the `--add` command.
+
+| Flag | Description | Default |
+| --- | --- | --- |
+| `--interval` | How often to collect and send metrics (in seconds). | `60` |
+| `--name` | The unique ID for this server in your dashboard. | (Required) |
+| `--batch-size` | Max number of metrics to buffer before sending. | `100` |
+
+**Example: High-Frequency Monitoring**
+To collect data every 5 seconds:
+
+```bash
+sudo lighthouse --add --name "high-freq-server" --harbor-id "123" --key "xyz" --source linux --interval 5
+```
 
 ## Available Metrics
 
-The monitoring agent can collect the following metrics:
+The `linux` source automatically captures the following core metrics:
 
-| Metric | Description |
-|--------|-------------|
-| CPU Usage | Overall CPU utilization percentage |
-| CPU Cores | Individual CPU core usage percentages |
-| RAM Usage | Memory usage percentage |
-| RAM Detailed | Detailed memory statistics (used, free, cached, etc.) |
-| Disk Usage | Root partition usage percentage |
-| Disk All | Usage for all mounted partitions |
-| Load Average | System load averages (1, 5, and 15 minutes) |
-| Processes | Total number of running processes |
-| Zombie Processes | Count of zombie processes |
-| Network In/Out | Network traffic rates |
-| Network Errors | Network error and dropped packet counts |
-| Temperature | CPU temperature (if available) |
-| Uptime | System uptime in seconds |
-| Boot Time | When the system was last booted |
-| Swap Usage | Swap space usage percentage |
-| Disk I/O | Disk read/write operations per second |
-| Open Files | Number of open file descriptors |
-| TCP/UDP Connections | Count of active network connections |
-| Logged Users | Number of users logged into the system |
-| System Entropy | Available entropy in the random pool |
-| Context Switches | Rate of CPU context switches |
-| Interrupts | Rate of hardware interrupts |
-| Kernel Version | Linux kernel version |
-| Battery | Battery status and capacity (if applicable) |
+* **CPU:** Usage percentage (System, User, Idle, Steal).
+* **Memory:** RAM Used, Free, Cached, and Buffers.
+* **Disk:** Usage percentage and free space for the root partition.
+* **Load Average:** 1, 5, and 15-minute load averages.
+* **Uptime:** System uptime in seconds.
+
+---
 
 ## Managing the Service
 
-After installation, the monitoring service runs automatically. You can manage it using:
+Lighthouse simplifies management with built-in commands. You do not need to interact with `systemctl` manually.
 
-# Check service status
-``` bash
-systemctl status harbor-monitor
-```
-# View logs
-``` bash
-journalctl -u harbor-monitor -f
-```
-# Stop the service
-``` bash
-systemctl stop harbor-monitor
-```
-# Start the service
-``` bash
-systemctl start harbor-monitor
-```
-# Disable automatic startup
-``` bash
-systemctl disable harbor-monitor
-```
-# Enable automatic startup
-``` bash
-systemctl enable harbor-monitor
-```
+| Task | Command |
+| --- | --- |
+| **Check Status** | `lighthouse --list` |
+| **View Logs** | `lighthouse --logs "server-01"` |
+| **Stop Monitoring** | `lighthouse --remove "server-01"` |
+| **Disable Updates** | `lighthouse --autoupdate=false` |
+
 ## Uninstalling
 
-To uninstall the monitoring agent:
+To completely remove the service and binary from your system:
 
-1. Run the installation script again:
-``` bash
-sudo ./install-monitoring.sh
+```bash
+sudo lighthouse --uninstall
 ```
-3. Select the "Uninstall Harbor Monitor" option from the menu.
+
+---
 
 ## Troubleshooting
 
 ### Common Issues
 
-**Error: Failed to send test data point**
-- Verify your API endpoint and key are correct
-- Check your internet connection
-- Ensure your firewall allows outbound connections
+**"Command not found" after installation**
 
-**Service starts but no data appears in Grafana**
-- Check the service logs: `journalctl -u harbor-monitor -f`
-- Verify the metrics are being collected correctly
-- Ensure your Harbor Scale account is active
+* The installer places the binary in `/usr/local/bin`. Ensure this directory is in your `$PATH`.
+* Try running `sudo /usr/local/bin/lighthouse --list`.
 
-**High CPU usage from the monitoring service**
-- Increase the sampling rate to reduce frequency
-- Reduce the number of metrics being collected
-- Check for any system issues that might be causing high CPU usage
+**Monitor status is "Unhealthy"**
+
+* Run `lighthouse --list` to see the status.
+* If unhealthy, check the logs: `lighthouse --logs "server-01"`.
+* **401 Unauthorized:** Check your API Key.
+* **Connection Refused:** Check your internet connection or Firewall settings.
+
+**Systemd Service Fails to Start**
+
+* If you manually removed files, reinstall using `sudo lighthouse --install`.
